@@ -8,9 +8,27 @@ terraform {
 }
 
 provider "yandex" {
-  service_account_key_file = "./tf_key.json"
+  token = "t1.9euelZrIyJzGiZ7GzI6RipKTzY6Nyu3rnpWazZCZm52Nj5GQz8-Mio7LiZnl8_dfV1ZU-e96IT81_d3z9x8GVFT573ohPzX9zef1656VmpmXj8nKnZbMm5CZnpWZzZiO7_zF656VmpmXj8nKnZbMm5CZnpWZzZiO.RNuixgg_gMUQdUPFkUfdf_nP8-iCb0pFPE_k1y2Zk28O_0YDbRbIz6RI6Lv838Vkqqcz_cIuV3qFzx8EYzkVCw"
   folder_id                = local.folder_id
   zone                     = "ru-central1-a"
+}
+
+resource "null_resource" "build_docker_image" {
+  provisioner "local-exec" {
+    command = <<-EOF
+      docker build -t bingo_db:1 ./db/
+      docker tag bingo_db:1 cr.yandex/"${yandex_container_registry.registry-bingo.id}"/bingo_db:1
+      docker push cr.yandex/"${yandex_container_registry.registry-bingo.id}"/bingo_db:1
+
+      docker build -t bingo_nginx:1 ./nginx/
+      docker tag bingo_nginx:1 cr.yandex/"${yandex_container_registry.registry-bingo.id}"/bingo_nginx:1
+      docker push cr.yandex/"${yandex_container_registry.registry-bingo.id}"/bingo_nginx:1
+
+      docker build -t bingo:1 ./app/
+      docker tag bingo:1 cr.yandex/"${yandex_container_registry.registry-bingo.id}"/bingo:1
+      docker push cr.yandex/"${yandex_container_registry.registry-bingo.id}"/bingo:1
+    EOF
+  }
 }
 
 resource "yandex_vpc_network" "foo" {}
@@ -148,9 +166,9 @@ resource "yandex_compute_instance_group" "bingo" {
           folder_id   = "${local.folder_id}",
           registry_id = "${yandex_container_registry.registry-bingo.id}",
           db_ip = "${yandex_compute_instance.bingo-db.network_interface[0].nat_ip_address}",
-          user-data = file("${path.module}/userdata.sh"),
         }
       )
+      user-data = file("${path.module}/set_dns.sh"),
       ssh-keys  = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
     }
   }
