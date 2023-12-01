@@ -1,0 +1,11 @@
+student_email: cima19056@yandex.ru
+
+postgres_cluster:
+  hosts:
+  - address: ${DB_IP}
+    port: 5432
+  user: smaug
+  password: P@ssw0rd
+  db_name: bingo
+  ssl_mode: disable
+  use_closest_node: false

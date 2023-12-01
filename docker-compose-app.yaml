@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  application:
+    image: "cr.yandex/${registry_id}/bingo:1"
+    # image: "bingo:1"
+    restart: always
+    # ports:
+    #   - "8090:21999"
+    environment:
+      DB_IP: "${db_ip}"
+    network_mode: "host"
+
+  nginx:
+    image: "cr.yandex/${registry_id}/bingo_nginx:1"
+    # image: "bingo_nginx:1"
+    restart: always
+    # ports:
+    #   - "80:80"
+    network_mode: "host"
