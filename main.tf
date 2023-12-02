@@ -8,9 +8,9 @@ terraform {
 }
 
 provider "yandex" {
-  token = "t1.9euelZrIyJzGiZ7GzI6RipKTzY6Nyu3rnpWazZCZm52Nj5GQz8-Mio7LiZnl8_dfV1ZU-e96IT81_d3z9x8GVFT573ohPzX9zef1656VmpmXj8nKnZbMm5CZnpWZzZiO7_zF656VmpmXj8nKnZbMm5CZnpWZzZiO.RNuixgg_gMUQdUPFkUfdf_nP8-iCb0pFPE_k1y2Zk28O_0YDbRbIz6RI6Lv838Vkqqcz_cIuV3qFzx8EYzkVCw"
-  folder_id                = local.folder_id
-  zone                     = "ru-central1-a"
+  token =     "YOUR_IAM_TOKEN"
+  folder_id = local.folder_id
+  zone =      "ru-central1-a"
 }
 
 resource "null_resource" "build_docker_image" {
@@ -44,12 +44,12 @@ resource "yandex_container_registry" "registry-bingo" {
 }
 
 locals {
-  folder_id = "b1g2u47btep3tb011eqr"
+  folder_id = "YOUR_FOLDER_ID"
   service-accounts = toset([
-    "bingo-sa12",
+    "bingo-sa",
     "bingo-ig-sa",
   ])
-  bingo-sa12-roles = toset([
+  bingo-sa-roles = toset([
     "container-registry.images.puller",
     "monitoring.editor",
   ])
@@ -66,9 +66,9 @@ resource "yandex_iam_service_account" "service-accounts" {
   name     = "${local.folder_id}-${each.key}"
 }
 resource "yandex_resourcemanager_folder_iam_member" "bingo-roles" {
-  for_each  = local.bingo-sa12-roles
+  for_each  = local.bingo-sa-roles
   folder_id = local.folder_id
-  member    = "serviceAccount:${yandex_iam_service_account.service-accounts["bingo-sa12"].id}"
+  member    = "serviceAccount:${yandex_iam_service_account.service-accounts["bingo-sa"].id}"
   role      = each.key
 }
 resource "yandex_resourcemanager_folder_iam_member" "bingo-ig-roles" {
@@ -84,7 +84,7 @@ data "yandex_compute_image" "coi" {
 
 resource "yandex_compute_instance" "bingo-db" {
   platform_id        = "standard-v2"
-  service_account_id = yandex_iam_service_account.service-accounts["bingo-sa12"].id
+  service_account_id = yandex_iam_service_account.service-accounts["bingo-sa"].id
   resources {
     cores         = 2
     memory        = 2
@@ -138,7 +138,7 @@ resource "yandex_compute_instance_group" "bingo" {
   }
   instance_template {
     platform_id        = "standard-v2"
-    service_account_id = yandex_iam_service_account.service-accounts["bingo-sa12"].id
+    service_account_id = yandex_iam_service_account.service-accounts["bingo-sa"].id
     resources {
       cores         = 2
       memory        = 2
