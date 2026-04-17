@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  application:
+    image: "cr.yandex/${registry_id}/bingo_db:1"
+    # image: "bingo_db:1"
+    network_mode: "host"
+
+  postgre_db:
+    image: postgres:latest
+    # ports:
+    #   - "5555:5432"
+    network_mode: "host"
+    restart: always
+    environment:
+      POSTGRES_DB: bingo
+      POSTGRES_USER: smaug
+      POSTGRES_PASSWORD: P@ssw0rd
